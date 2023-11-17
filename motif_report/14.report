@@ -1,0 +1,25 @@
+########################################
+# Program: patmatmotifs
+# Rundate: Thu 16 Nov 2023 17:36:20
+# Commandline: patmatmotifs
+#    -sequence seqs/14.fasta
+#    -outfile motif_report/14.report
+#    -full
+# Report_format: dbmotif
+# Report_file: motif_report/14.report
+########################################
+
+#=======================================
+#
+# Sequence: XP_011513658.1     from: 1   to: 303
+# HitCount: 0
+#
+# Full: Yes
+# Prune: Yes
+# Data_file: /usr/share/EMBOSS/data/PROSITE/prosite.lines
+#
+#=======================================
+
+
+#---------------------------------------
+#---------------------------------------

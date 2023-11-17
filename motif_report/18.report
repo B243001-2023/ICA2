@@ -1,0 +1,35 @@
+########################################
+# Program: patmatmotifs
+# Rundate: Thu 16 Nov 2023 17:36:20
+# Commandline: patmatmotifs
+#    -sequence seqs/18.fasta
+#    -outfile motif_report/18.report
+#    -full
+# Report_format: dbmotif
+# Report_file: motif_report/18.report
+########################################
+
+#=======================================
+#
+# Sequence: XP_011513653.1     from: 1   to: 511
+# HitCount: 1
+#
+# Full: Yes
+# Prune: Yes
+# Data_file: /usr/share/EMBOSS/data/PROSITE/prosite.lines
+#
+#=======================================
+
+Length = 4
+Start = position 40 of sequence
+End = position 43 of sequence
+
+Motif = AMIDATION
+
+AFIKATGKKEDEHV
+     |  |
+    40  43
+
+
+#---------------------------------------
+#---------------------------------------
