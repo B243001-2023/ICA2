@@ -20,7 +20,12 @@ while 1:
                     taxid = subprocess.getoutput('esearch -db taxonomy -query "' + taxon + '"|efetch')
                     #print(taxid)
                 if taxid != '' and ('ERROR' not in taxid) and ('FAILURE' not in taxid):
-                    break
+                    check = input('do you really want use this taxonomy? input y to confirm, other keys to cancel: ')
+                    if check == 'y':
+                        break
+                    else:
+                        print('going back')
+                        continue
                 print('please input a legal taxonomy name!')
             
             taxid = taxid.split('\n')
@@ -40,8 +45,13 @@ while 1:
                 #print(taxid[i-1][3:]) used it to check the output
                 taxid = subprocess.getoutput('esearch -db taxonomy -query "' + taxon + '"|efetch -format taxid')
                 taxid = taxid.split('\n')[i-1]
-                print('got the taxid, which is ' + str(taxid) + '\n')
-                break
+                print('got the taxid, which is ' + str(taxid))
+                check = input('do you really want use this taxid? input y to confirm, other keys to cancel: ')
+                if check == 'y':
+                    break
+                else:
+                    print('going back')
+                    continue
             #found a code breaker
             else:
                 print('please input a legal index')
@@ -55,7 +65,12 @@ while 1:
             #the keywords will be the most important part of the search command line
             result = subprocess.getoutput('esearch -db protein -query ' + keywords + '|efetch -format fasta')
             if 'FAILURE' not in result and 'ERROR' not in result and result:
-                break
+                check = input('do you really want use this protein family? input y to confirm, other keys to cancel: ')
+                if check == 'y':
+                    break
+                else:
+                    print('going back')
+                    continue
             else:
                 print("You didn't pick a legal name of protein family, please correct it!")
         print('your searching command is:')
@@ -95,12 +110,12 @@ print(list(seq_dict.items())[0])
 if len(seq_dict) > 1000:
     i = input('your protein family have too many seqs, do you wanna abandon some? (1000 seqs will be kept) [y/n]')
     if i == 'y':
-        open('a.fasta', 'w').read('')
+        open('a.fasta', 'w').write('')
         for i in range(0, 1000):
-            open('a.fasta', 'a').wirte(list(seq_dict.keys())[i] + '\n')
-            open('a.fasta', 'a').wirte(list(seq_dict.values())[i] + '\n')
-            print('only 100 seqs have been kept')
-        seq_dict = dict(seq_dict.items()[0:1000])
+            open('a.fasta', 'a').write(list(seq_dict.keys())[i] + '\n')
+            open('a.fasta', 'a').write(list(seq_dict.values())[i] + '\n')
+        seq_dict = dict(list(seq_dict.items())[0:1000])
+        print('only 1000 seqs have been kept')
     else:
         print('nothing changed, as you wish')
 
@@ -131,7 +146,7 @@ def needle(self, k):
     candidate_seq = []
     while 1:
         candidate_seq_1 = input('pick a seq as candidate, input 0 to finish\n')
-        print(str(len(candidate_seq)) + ' seqs have been picked')
+        print(str(len(candidate_seq)+1) + ' seqs have been picked')
         if candidate_seq_1 in list(self.keys()):
             candidate_seq += [candidate_seq_1]
         elif candidate_seq_1 == '0' and len(candidate_seq) > 0:
@@ -143,29 +158,29 @@ def needle(self, k):
     open('standard.fasta', 'w').write(standard_seq+'\n'+self[standard_seq]+'\n')
     for i in candidate_seq:
         open('candidate.fasta', 'w').write(standard_seq+'\n'+self[standard_seq]+'\n')
-    subprocess.run('needle -asequence standard.fasta -bsequence candidate.fasta -outfile needle_'+k+'.output', shell = True)
+    subprocess.run('needle -asequence standard.fasta -bsequence candidate.fasta -outfile needle_'+str(k)+'.output', shell = True)
     print('needle_'+str(k)+'.output has been generated')
-    return 0
+    return('needle_'+str(k)+'.output')
 
 #using the clustalo analysis
 def clustalo_analysis():
     try:
         if os.path.exists('tree.png'):
             os.remove('tree.png') #init environment
-        subprocess.run('clustalo -i a.fasta -o a.out --outfmt=phy -v --force --guidetree-out=b', shell = True)
+        subprocess.run('clustalo -i a.fasta -o Clustalo.out --outfmt=phy -v --force --guidetree-out=b', shell = True)
         tre = open('b').read()
         tre = tre.replace('\n','')
         tre = toytree.tree(tre)
-        tre_plot = tre.draw(width=1600, height=1600)
+        tre_plot = tre.draw()
         toyplot.png.render(tre_plot[0], 'tree.png')
         image_path = 'tree.png'
         img = mpimg.imread(image_path)
         plt.imshow(img)
         plt.axis('off')
         plt.show()
-        return(0)
+        return(['tree.png', 'Clustalo.out'])
     except:
-        return(1)
+        return(False)
 
 def plotcon():
     try:
@@ -173,7 +188,7 @@ def plotcon():
         img = mpimg.imread('plotcon.1.png')
         plt.imshow(img)
         plt.show()
-        return(0)
+        return('plotcon.1.png')
     except:
         return(1)
 
@@ -189,6 +204,7 @@ def patmatmotif(self):
     os.makedirs('seqs', exist_ok=True)
     os.makedirs('motif_report', exist_ok=True)
     for i in range(len(self)):
+        #make a output for every single file
         a=str(i)
         print(keys_list[i])
         open('seqs/'+a+'.fasta', 'w').write(keys_list[i]+'\n')
@@ -203,24 +219,41 @@ def patmatmotif(self):
         open('Motifs_report', 'a').write(seq)
         pattern = re.compile(r'Motif = .*')
         matches = pattern.finditer(report)
+        motifs = []
         for match in matches:
-            motif = match.group().split(' = ')[1]
+            motifs += [match.group().split(' = ')[1]]
+        open('Motifs_report', 'a').write('\t'+str(len(motifs)))
+        for motif in motifs:
             open('Motifs_report', 'a').write('\t'+motif)
         open('Motifs_report', 'a').write('\n')
-    return(0)
+    return('Motifs_report')
 
-#main function area
-plotcon()
-patmatmotif(seq_dict)
-clustalo_analysis()
+def cons():
+    subprocess.run('cons -sequence a.fasta -outseq cons_output', shell = True)
+    return('cons_output')
+
+def garnier():
+    subprocess.run('garnier -sequence a.fasta -outfile garnier_output', shell=True)
+    return('garnier_output')
+
+def pepstats():
+    subprocess.run('pepstats -sequence a.fasta -outfile pepstats_output', shell=True)
+    return('pepstats_output')
+
+#%%main function area
+output_files = set()
+output_files.add(plotcon())
+output_files.add(patmatmotif(seq_dict))
+for i in clustalo_analysis():
+    output_files.add(i)
 
 i = 1
 while i!=0:
     print('What are you gonna do?')
     print('0: quit')
-    print('1: plotcon (already finished automaticly), the similarity of seqs depends on the position')
-    print('2: patmatmotif (already finished automaticly), which will find the motif in the seqs')
-    print('3: clustalo_analysis (already finished automaticly), which will generate a tree file and an all to all alignment result')
+    print('1: plotcon (already finished automatically), the similarity of seqs depends on the position')
+    print('2: patmatmotif (already finished automatically), which will find the motif in the seqs')
+    print('3: clustalo_analysis (already finished automatically), which will generate a tree file and an all to all alignment result')
     print('4: needle, picking a standard seq and some candidate seqs for a alignment')
     print('5: cons, which can generate a consensus alignment file')
     print('6: garnier, predicting protein secondary structure using GOR method')
@@ -229,16 +262,32 @@ while i!=0:
     i = int(input('\nPick a function, program will do the analysis for you.\n'))
     k=1
     if i == 4:
-        k += needle(seq_dict,k)
+        output_files.add(needle(seq_dict,k))
+        k+=1
     elif i == 1:
         a = plotcon()
-        if 1-a:
+        if a==False:
             print('sorry, something wrong with this function')
+        else:
+            output_files.add(a)
     elif i == 2:
-        patmatmotif(seq_dict)
+        output_files.add(patmatmotif(seq_dict))
     elif i == 3:
-        clustalo_analysis()
+        for i in clustalo_analysis():
+            output_files.add(i)
+    elif i == 5:
+        output_files.add(cons())
+    elif i == 6:
+        output_files.add(garnier())
+    elif i == 7:
+        output_files.add(pepstats())
     elif i == 0:
+        if os.path.exists('RESULTS'):
+            shutil.rmtree('RESULTS')
+        os.makedirs('RESULTS')
+        for i in output_files:
+            print(i)
+            os.system('cp '+i+' RESULTS')
         print('Thanks for using me')
         break
     else:
